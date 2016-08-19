@@ -76,6 +76,20 @@
 <script src="${coreJs}"></script>
 <script src="${bootstrapJs}"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="https://www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>
+
+<div id="ppplus"> </div>
+
+
+<script type="application/javascript">
+    var ppp = PAYPAL.apps.PPP({"approvalUrl": "https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-0LV62077EN977954B","placeholder": "ppplus","mode": "sandbox",});
+</script>
+
+
+<!--<button type="submit"
+        id="continueButton"
+        onclick="ppp.doContinue(); return false;">Checkout
+</button>-->
 
 </body>
 </html>
