@@ -19,7 +19,6 @@ public class WelcomeController {
 
     @Autowired
     PaymentService paymentService;
-    
 
     private final Logger logger = LoggerFactory.getLogger(WelcomeController.class);
     private final HelloWorldService helloWorldService;
@@ -31,17 +30,19 @@ public class WelcomeController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String index(Map<String, Object> model) {
-        try{
+        try {
             logger.info("BEFORE PAY ");
-            paymentService.pay();
+            String approval_url = paymentService.pay();
             logger.info("AFTYER PAY ");
-        }catch(Exception ex) {
+            model.put("approval_url", approval_url);
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         logger.debug("index() is executed!");
 
         model.put("title", helloWorldService.getTitle(""));
+
         model.put("msg", helloWorldService.getDesc());
 
         return "index";
@@ -59,7 +60,25 @@ public class WelcomeController {
         model.addObject("msg", helloWorldService.getDesc());
 
         return model;
-
     }
 
+    @RequestMapping(value = "/success", method = RequestMethod.GET)
+    public String succes(Map<String, Object> model) {
+
+        logger.debug("success is executed!");
+
+        model.put("msg", "success");
+
+        return "success";
+    }
+
+    @RequestMapping(value = "/cancel", method = RequestMethod.GET)
+    public String cancel(Map<String, Object> model) {
+
+        logger.debug("success is executed!");
+
+        model.put("msg", "cancel");
+
+        return "cancel";
+    }
 }

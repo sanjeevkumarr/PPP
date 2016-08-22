@@ -2,7 +2,6 @@
 # PPP
 for testing
 ===============================
-
 ###1. Technologies used
 * Required Servlet 3.0+ container, like Tomcat 7 or Jetty 8
 * Gradle 2.0
@@ -25,5 +24,4 @@ Access ```http://localhost:8080/spring4```
 
 ###4. Project Demo
 Please refer to this article [Gradle - Spring 4 MVC Hello World + Annotation ](http://www.mkyong.com/spring-mvc/gradle-spring-4-mvc-hello-world-example-annotation/)
-
 

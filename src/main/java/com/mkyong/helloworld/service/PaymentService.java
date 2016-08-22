@@ -16,6 +16,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface PaymentService {
     
-    public void pay() throws Exception;
+    public String pay() throws Exception;
     
 }

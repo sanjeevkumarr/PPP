@@ -44,17 +44,17 @@ public class PaymentServiceImpl implements PaymentService {
         return null;
     }
 
-    public void pay() throws Exception {
+    public String pay() throws Exception {
 
         this.getAuthToken();
-        this.createPayment();
+        return this.createPayment();
 //        Payment payment = new Payment();        
 //        payment =  payment.create();        
 
 //        System.out.println(" Payment " + payment.toString());        
     }
 
-    public void createPayment() throws Exception {
+    public String createPayment() throws Exception {
 
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
 
@@ -69,7 +69,7 @@ public class PaymentServiceImpl implements PaymentService {
         // ###Amount
         // Let's you specify a payment amount.
         Amount amount = new Amount();
-        amount.setCurrency("USD");
+        amount.setCurrency("BRL");
         // Total must be equal to sum of shipping, tax and subtotal.
         amount.setTotal("7");
         amount.setDetails(details);
@@ -88,7 +88,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // ### Items
         Item item = new Item();        
-        item.setName("For VM creation").setQuantity("1").setCurrency("USD").setPrice("5");
+        item.setName("For VM creation").setQuantity("1").setCurrency("BRL").setPrice("5");
         ItemList itemList = new ItemList();
         List<Item> items = new ArrayList<Item>();
         items.add(item);
@@ -120,11 +120,12 @@ public class PaymentServiceImpl implements PaymentService {
         // ###Redirect URLs
         RedirectUrls redirectUrls = new RedirectUrls();
         String guid = UUID.randomUUID().toString().replaceAll("-", "");
-        redirectUrls.setCancelUrl("https://google.com");
-        redirectUrls.setReturnUrl("https://yahoo.com");
+        redirectUrls.setReturnUrl("http://localhost:8080/spring4/success");
+        redirectUrls.setCancelUrl("http://localhost:8080/spring4/cancel");
         payment.setRedirectUrls(redirectUrls);
 
         try {
+            String approval_url ="";
             createdPayment = payment.create(apiContext);
             System.out.println("Created payment with id = " + createdPayment.getId() + " and status = " + createdPayment.getState());
             // ###Payment Approval Url
@@ -132,6 +133,7 @@ public class PaymentServiceImpl implements PaymentService {
             while (links.hasNext()) {
                 Links link = links.next();
                 if (link.getRel().equalsIgnoreCase("approval_url")) {
+                    approval_url = link.getHref();
                     System.out.println(" ******************************approval_url****************************** ");
                     System.out.println(" approval_url " + link.getHref());
                     System.out.println(" ******************************approval_url****************************** ");
@@ -141,10 +143,13 @@ public class PaymentServiceImpl implements PaymentService {
             System.out.println(" Payment.getLastRequest() " + Payment.getLastRequest());
             System.out.println(" Payment.getLastRequest() " + Payment.getLastResponse());
             System.out.println(" Payment.getLastRequest() " + createdPayment.getId());
+            
+            return approval_url;
 
         } catch (PayPalRESTException e) {
             e.printStackTrace();
         }
-
+        
+        return null;
     }
 }
