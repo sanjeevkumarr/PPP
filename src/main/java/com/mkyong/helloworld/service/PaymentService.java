@@ -6,6 +6,7 @@
 package com.mkyong.helloworld.service;
 
 import com.mkyong.helloworld.paymentgateway.Paypal;
+import com.paypal.api.payments.Payment;
 import org.springframework.stereotype.Service;
 
 
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public interface PaymentService {
     
-    public String pay() throws Exception;
+    public Payment pay() throws Exception;
+    
+    public String getPayment(String paymentId, String token) throws Exception  ;
     
 }

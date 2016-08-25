@@ -81,32 +81,52 @@
     <script src="${bootstrapJs}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script src="https://www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>
-    
+
     <div id="ppplus" > </div>
-    
 
 
+
+    <!--   
     <script type="application/javascript">
-        var ppp = PAYPAL.apps.PPP({
+            var ppp = PAYPAL.apps.PPP({
             "approvalUrl": "${approval_url}",
             "placeholder": "ppplus",
-//            "payerFirstName": "Ryan",
-//            "payerLastName": "Ryan",
-//            "payerEmail": "sanjeev@brazil.com",
-//            "payerPhone": "6802304988",
-//            "language": "de-DE",
-//            "buttonLocation ": "outside",
-//            "disableContinue":"continueButton",
-//            "enableContinue": "continueButton",
+            //            "payerFirstName": "Ryan",
+            //            "payerLastName": "Ryan",
+            //            "payerEmail": "sanjeev@brazil.com",
+            //            "payerPhone": "6802304988",
+            //            "language": "de-DE",
+            //            "buttonLocation ": "outside",
+            //            "disableContinue":"continueButton",
+            //            "enableContinue": "continueButton",
             "mode": "sandbox",});
+        </script>
+    -->    
+    <!--<iframe src="${approval_url}"> </iframe>-->
+    <!--    
+    <script type="application/javascript">
+            var ppp = PAYPAL.apps.PPP({
+            "approvalUrl": "${approval_url}",
+            "placeholder": "ppplus",
+            "mode": "sandbox",
+            "country": "BR"
+            });
+            
+    
+        </script> 
+    -->
+
+    <script type="text/javascript">
+        
+        function myFunction() {
+            window.open("${approval_url}", "_blank", "width=1024,height=768,location=1,resizable=1,scrollbars=1,status=1", true);
+        }
     </script>
 
 
-
-    <button type="submit"
+    <button type="submit"          
             id="continueButton"
-            onclick="ppp.doContinue();
-    return false;">Checkout
+            onclick="myFunction()">Checkout
     </button>
 
 

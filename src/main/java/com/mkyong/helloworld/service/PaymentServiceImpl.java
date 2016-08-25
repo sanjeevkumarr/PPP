@@ -12,6 +12,7 @@ import com.paypal.api.payments.ItemList;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payer;
 import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.PaymentExecution;
 import com.paypal.api.payments.PaymentInstruction;
 import com.paypal.api.payments.PaymentOptions;
 import com.paypal.api.payments.RedirectUrls;
@@ -44,9 +45,10 @@ public class PaymentServiceImpl implements PaymentService {
         return null;
     }
 
-    public String pay() throws Exception {
+    public Payment pay() throws Exception {
 
         this.getAuthToken();
+
         return this.createPayment();
 //        Payment payment = new Payment();        
 //        payment =  payment.create();        
@@ -54,7 +56,7 @@ public class PaymentServiceImpl implements PaymentService {
 //        System.out.println(" Payment " + payment.toString());        
     }
 
-    public String createPayment() throws Exception {
+    public Payment createPayment() throws Exception {
 
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
 
@@ -80,14 +82,14 @@ public class PaymentServiceImpl implements PaymentService {
         // a `Payee` and `Amount` types
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
-        
+
         System.out.println("adding payment option");
-        
+
         transaction.setPaymentOptions(new PaymentOptions().setAllowedPaymentMethod("IMMEDIATE_PAY"));
         transaction.setDescription("This is the payment transaction description.");
 
         // ### Items
-        Item item = new Item();        
+        Item item = new Item();
         item.setName("For VM creation").setQuantity("1").setCurrency("BRL").setPrice("5");
         ItemList itemList = new ItemList();
         List<Item> items = new ArrayList<Item>();
@@ -115,7 +117,6 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setIntent("sale");
         payment.setPayer(payer);
         payment.setTransactions(transactions);
-        
 
         // ###Redirect URLs
         RedirectUrls redirectUrls = new RedirectUrls();
@@ -125,31 +126,58 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setRedirectUrls(redirectUrls);
 
         try {
-            String approval_url ="";
+            String approval_url = "";
             createdPayment = payment.create(apiContext);
             System.out.println("Created payment with id = " + createdPayment.getId() + " and status = " + createdPayment.getState());
             // ###Payment Approval Url
             Iterator<Links> links = createdPayment.getLinks().iterator();
             while (links.hasNext()) {
                 Links link = links.next();
+                System.out.println(" approval_url " + link.getHref());
                 if (link.getRel().equalsIgnoreCase("approval_url")) {
                     approval_url = link.getHref();
                     System.out.println(" ******************************approval_url****************************** ");
                     System.out.println(" approval_url " + link.getHref());
                     System.out.println(" ******************************approval_url****************************** ");
-                }
+                } 
             }
 
             System.out.println(" Payment.getLastRequest() " + Payment.getLastRequest());
             System.out.println(" Payment.getLastRequest() " + Payment.getLastResponse());
             System.out.println(" Payment.getLastRequest() " + createdPayment.getId());
-            
-            return approval_url;
+
+            return createdPayment;
 
         } catch (PayPalRESTException e) {
             e.printStackTrace();
         }
-        
+
+        return null;
+    }
+
+    public String getPayment(String paymentId, String token) throws Exception {
+
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+
+        Payment createdPayment = Payment.get(apiContext, paymentId);
+
+        System.out.println("createdPayment " + createdPayment.getIntent());
+        System.out.println("createdPayment " + createdPayment.getState());
+        System.out.println("createdPayment " + createdPayment.getPayer());
+
+        PaymentExecution paymentExecution = new PaymentExecution();
+        paymentExecution.setPayerId(createdPayment.getPayer().getPayerInfo().getPayerId());
+        try {
+            createdPayment = createdPayment.execute(apiContext, paymentExecution);
+//            System.out.println("Executed The Payment" + Payment.getLastRequest());
+            System.out.println("Executed The Payment" );
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+//        payment.
+//        
         return null;
     }
 }

@@ -13,6 +13,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.mkyong.helloworld.service.HelloWorldService;
 import com.mkyong.helloworld.service.PaymentService;
+import com.paypal.api.payments.Links;
+import com.paypal.api.payments.Payment;
+import java.util.Iterator;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class WelcomeController {
@@ -32,9 +36,24 @@ public class WelcomeController {
     public String index(Map<String, Object> model) {
         try {
             logger.info("BEFORE PAY ");
-            String approval_url = paymentService.pay();
+            Payment createdPayment = paymentService.pay();
+
+            Iterator<Links> links = createdPayment.getLinks().iterator();
+            while (links.hasNext()) {
+                Links link = links.next();
+                if (link.getRel().equalsIgnoreCase("approval_url")) {
+                    String approval_url = link.getHref();
+                    model.put("approval_url", approval_url);
+                    System.out.println(" ******************************approval_url****************************** ");
+                    System.out.println(" approval_url " + link.getHref());
+                    System.out.println(" ******************************approval_url****************************** ");
+                } else if (link.getRel().equalsIgnoreCase("self")) {                                        
+                    model.put("token", link.getHref());
+                }
+            }
+model.put("token", createdPayment);
             logger.info("AFTYER PAY ");
-            model.put("approval_url", approval_url);
+            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -63,9 +82,17 @@ public class WelcomeController {
     }
 
     @RequestMapping(value = "/success", method = RequestMethod.GET)
-    public String succes(Map<String, Object> model) {
+    public String succes(@RequestParam("paymentId") String paymentId, @RequestParam("token") String token, Map<String, Object> model) {
 
         logger.debug("success is executed!");
+
+        System.out.println(paymentId);
+        System.out.println(token);
+        try {
+            paymentService.getPayment(paymentId, token);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         model.put("msg", "success");
 

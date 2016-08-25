@@ -11,8 +11,8 @@ package com.mkyong.helloworld.service;
  */
 public class APIConstants {    
     
-    public static String clientId = "AUry2iM7PCZvnxuOPfrZwJiC6CuQwo2LHDACKFiV66klpc4ykizqJoPG4a6MHgPVlJ3oCsaTaVcr-2nf"; 
-    public static String secretId = "EP2n6ja2j-5gF3B8CJl8X7G6S9Nwfqkw8MJbMPv68qLzLN06gp_3GQNaOW37LdZ_YHuwtSC2vh-qaK20"; 
+    public static String clientId = "AS-hL3rQxgmKxpMwu5pTF05bMkCrPLcvGO2p4xirOfqh8aDh2OFCPeZr3y4tYpEiSIzqZFrrRqbi5UPj"; 
+    public static String secretId = "EGaLvYJMIkkloUd36kEhZ7z1qnGUwvQXIIjor7JzGbM5qaUBLc-S5DLSkcjHUOGSuL7_wc-GepxmeWcJ"; 
     public static String mode = "sandbox"; 
     
 }
