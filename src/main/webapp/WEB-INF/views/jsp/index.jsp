@@ -103,28 +103,27 @@
         </script>
     -->    
     <!--<iframe src="${approval_url}"> </iframe>-->
-    <!--    
+
     <script type="application/javascript">
             var ppp = PAYPAL.apps.PPP({
             "approvalUrl": "${approval_url}",
             "placeholder": "ppplus",
             "mode": "sandbox",
-            "country": "BR"
+            "country": "US"
             });
-            
     
         </script> 
-    -->
+
 
     <script type="text/javascript">
-        
+
         function myFunction() {
             window.open("${approval_url}", "_blank", "width=1024,height=768,location=1,resizable=1,scrollbars=1,status=1", true);
         }
-    </script>
+</script>
 
 
-    <button type="submit"          
+    <button type="submit"
             id="continueButton"
             onclick="myFunction()">Checkout
     </button>
