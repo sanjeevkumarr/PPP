@@ -6,7 +6,10 @@
 package com.mkyong.helloworld.service;
 
 import com.paypal.api.payments.Amount;
+import com.paypal.api.payments.CreateProfileResponse;
 import com.paypal.api.payments.Details;
+import com.paypal.api.payments.FlowConfig;
+import com.paypal.api.payments.InputFields;
 import com.paypal.api.payments.Item;
 import com.paypal.api.payments.ItemList;
 import com.paypal.api.payments.Links;
@@ -15,8 +18,10 @@ import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
 import com.paypal.api.payments.PaymentInstruction;
 import com.paypal.api.payments.PaymentOptions;
+import com.paypal.api.payments.Presentation;
 import com.paypal.api.payments.RedirectUrls;
 import com.paypal.api.payments.Transaction;
+import com.paypal.api.payments.WebProfile;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import java.util.ArrayList;
@@ -139,7 +144,7 @@ public class PaymentServiceImpl implements PaymentService {
                     System.out.println(" ******************************approval_url****************************** ");
                     System.out.println(" approval_url " + link.getHref());
                     System.out.println(" ******************************approval_url****************************** ");
-                } 
+                }
             }
 
             System.out.println(" Payment.getLastRequest() " + Payment.getLastRequest());
@@ -170,14 +175,57 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             createdPayment = createdPayment.execute(apiContext, paymentExecution);
 //            System.out.println("Executed The Payment" + Payment.getLastRequest());
-            System.out.println("Executed The Payment" );
-            
+            System.out.println("Executed The Payment");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
 //        payment.
-//        
+//      
         return null;
     }
+    
+    
+    @Override
+    public WebProfile createExperienceProfile(String profileName) throws Exception {
+
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+        WebProfile webProfile = new WebProfile(profileName);
+
+        Presentation presentation = new Presentation();
+        presentation.setBrandName("FogPanel");
+        presentation.setLogoImage("https://manage.fogpanel.com/ui/images/fog_logo.png");
+        presentation.setLocaleCode("BR");
+
+        InputFields fields = new InputFields();
+        fields.setAddressOverride(1);
+        fields.setAllowNote(Boolean.FALSE);
+        fields.setNoShipping(1);
+
+        webProfile.setInputFields(fields);
+        webProfile.setPresentation(presentation);
+        CreateProfileResponse response = webProfile.create(apiContext);
+
+        System.out.println(" Experience profile id  : " + response.getId());
+        return webProfile;
+
+    }
+
+    @Override
+    public WebProfile getWebProfileById(String profileId) throws PayPalRESTException {
+
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+        
+        return WebProfile.get(apiContext, profileId);
+    }
+    
+    
+    @Override
+    public List<WebProfile> getAllWebProfile() throws PayPalRESTException {
+
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);        
+        return WebProfile.getList(apiContext);
+    }
+
 }

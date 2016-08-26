@@ -108,4 +108,23 @@ model.put("token", createdPayment);
 
         return "cancel";
     }
+    
+    
+    @RequestMapping(value = "/profile", method = RequestMethod.GET)
+    public String experienceProfile(Map<String, Object> model) {
+        
+        try {            
+            model.put("allProfiles", paymentService.getAllWebProfile());                         
+            model.put("newProfile", paymentService.createExperienceProfile("FogPanel_BR"));
+            model.put("latestProfiles", paymentService.getAllWebProfile());            
+            
+        } catch (Exception ex )  {
+            
+            ex.printStackTrace();            
+            
+            return "error";
+        }
+
+        return "profile";
+    }    
 }
