@@ -7,6 +7,9 @@ package com.mkyong.helloworld.service;
 
 import com.mkyong.helloworld.paymentgateway.Paypal;
 import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.WebProfile;
+import com.paypal.base.rest.PayPalRESTException;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 
@@ -23,4 +26,9 @@ public interface PaymentService {
 
     public Payment createCreditCardPayment() throws Exception ;
     
+    public WebProfile createExperienceProfile(String profileName ) throws Exception;
+    
+    public  WebProfile getWebProfileById(String profileId) throws PayPalRESTException;
+    
+    public List<WebProfile> getAllWebProfile() throws PayPalRESTException ;    
 }

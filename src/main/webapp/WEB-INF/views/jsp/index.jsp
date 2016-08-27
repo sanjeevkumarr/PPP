@@ -109,18 +109,18 @@
             "approvalUrl": "${approval_url}",
             "placeholder": "ppplus",
             "mode": "sandbox",
-            "country": "US"
+            "country": "BR"
             });
     
         </script> 
-
-
+    
+<!--
     <script type="text/javascript">
 
         function myFunction() {
             window.open("${approval_url}", "_blank", "width=1024,height=768,location=1,resizable=1,scrollbars=1,status=1", true);
         }
-</script>
+    </script>-->
 
 
     <button type="submit"
