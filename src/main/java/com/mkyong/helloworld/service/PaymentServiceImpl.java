@@ -232,52 +232,7 @@ public class PaymentServiceImpl implements PaymentService {
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);        
         return WebProfile.getList(apiContext);
     }
-
     
-    
-    @Override
-    public WebProfile createExperienceProfile(String profileName) throws Exception {
-
-        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
-        WebProfile webProfile = new WebProfile(profileName);
-
-        Presentation presentation = new Presentation();
-        presentation.setBrandName("FogPanel");
-        presentation.setLogoImage("https://manage.fogpanel.com/ui/images/fog_logo.png");
-        presentation.setLocaleCode("BR");
-
-        InputFields fields = new InputFields();
-        fields.setAddressOverride(1);
-        fields.setAllowNote(Boolean.FALSE);
-        fields.setNoShipping(1);
-
-        webProfile.setInputFields(fields);
-        webProfile.setPresentation(presentation);
-        CreateProfileResponse response = webProfile.create(apiContext);
-
-        System.out.println(" Experience profile id  : " + response.getId());
-        return webProfile;
-
-    }
-
-    @Override
-    public WebProfile getWebProfileById(String profileId) throws PayPalRESTException {
-
-        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
-        
-        return WebProfile.get(apiContext, profileId);
-    }
-    
-    
-    @Override
-    public List<WebProfile> getAllWebProfile() throws PayPalRESTException {
-
-        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);        
-        return WebProfile.getList(apiContext);
-    }
-
-
-
     public Payment createCreditCardPayment() throws Exception {
 
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
