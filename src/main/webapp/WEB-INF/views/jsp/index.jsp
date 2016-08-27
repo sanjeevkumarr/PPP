@@ -103,13 +103,13 @@
         </script>
     -->    
     <!--<iframe src="${approval_url}"> </iframe>-->
-
+        
     <script type="application/javascript">
             var ppp = PAYPAL.apps.PPP({
             "approvalUrl": "${approval_url}",
             "placeholder": "ppplus",
             "mode": "sandbox",
-            "country": "BR"
+            "country": "DE"
             });
     
         </script> 
