@@ -8,7 +8,13 @@ package com.mkyong.helloworld.service;
 import com.mkyong.helloworld.paymentgateway.Paypal;
 import com.paypal.api.payments.Amount;
 import com.paypal.api.payments.CreateProfileResponse;
+import com.paypal.api.payments.CreditCard;
+import com.paypal.api.payments.CreateProfileResponse;
 import com.paypal.api.payments.Details;
+import com.paypal.api.payments.FlowConfig;
+import com.paypal.api.payments.InputFields;
+import com.paypal.api.payments.FundingInstrument;
+import com.paypal.api.payments.FlowConfig;
 import com.paypal.api.payments.InputFields;
 import com.paypal.api.payments.Item;
 import com.paypal.api.payments.ItemList;
@@ -257,6 +263,138 @@ public class PaymentServiceImpl implements PaymentService {
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
         return WebProfile.getList(apiContext);
     }
+    
+    public Payment createCreditCardPayment() throws Exception {
+
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+
+        System.out.println("Getting API context : " + apiContext );
+
+        Payment createdPayment = null;
+
+        // ###Details
+        // Let's you specify details of a payment amount.
+        Details details = new Details();
+        details.setShipping("1");
+        details.setSubtotal("5");
+        details.setTax("1");
+        // ###Amount
+        // Let's you specify a payment amount.
+        Amount amount = new Amount();
+        amount.setCurrency("BRL");
+        // Total must be equal to sum of shipping, tax and subtotal.
+        amount.setTotal("7");
+//        amount.setDetails(details);
+        // ###Transaction
+        // A transaction defines the contract of a
+        // payment - what is the payment for and who
+        // is fulfilling it. Transaction is created with
+        // a `Payee` and `Amount` types
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+
+        System.out.println("adding payment option");
+
+//        transaction.setPaymentOptions(new PaymentOptions().setAllowedPaymentMethod("IMMEDIATE_PAY"));
+        transaction.setAmount(amount);
+        transaction.setDescription("This is the payment transaction description.");
+
+
+
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        transactions.add(transaction);
+
+        FundingInstrument  fundingInstrument  = new FundingInstrument();
+        CreditCard  creditCard = new CreditCard();
+
+//        creditCard.setNumber("4002350589119162");
+//        creditCard.setType("VISA");
+//        creditCard.setExpireMonth(9);
+//        creditCard.setExpireYear(2021);
+//        creditCard.setCvv2(123);
+//        creditCard.setFirstName("test");
+//        creditCard.setLastName("buyer");
+
+//For usd:
+//
+        creditCard.setNumber("4032038243629304");
+        creditCard.setType("VISA");
+        creditCard.setExpireMonth(9);
+        creditCard.setExpireYear(2021);
+        creditCard.setCvv2(123);
+        creditCard.setFirstName("test");
+        creditCard.setLastName("test");
+
+        List<FundingInstrument>  fundingInstruments = new ArrayList<>();
+        fundingInstruments.add(fundingInstrument);
+
+
+
+
+        // ###Payer
+        // A resource representing a Payer that funds a payment
+        // Payment Method
+        // as 'paypal'
+        Payer payer = new Payer();
+        payer.setPaymentMethod("credit_card");
+        payer.setFundingInstruments(fundingInstruments);
+
+
+        // ###Payment
+        // A Payment Resource; create one using
+        // the above types and intent as 'sale'
+        Payment payment = new Payment();
+        payment.setIntent("sale");
+        payment.setPayer(payer);
+        payment.setTransactions(transactions);
+
+//        // ###Redirect URLs
+//        RedirectUrls redirectUrls = new RedirectUrls();
+//        String guid = UUID.randomUUID().toString().replaceAll("-", "");
+//        redirectUrls.setReturnUrl("http://localhost:8080/spring4/success");
+//        redirectUrls.setCancelUrl("http://localhost:8080/spring4/cancel");
+//        payment.setRedirectUrls(redirectUrls);
+
+        try {
+
+            String approval_url = "";
+
+            createdPayment = payment.create(apiContext);
+
+
+            System.out.println("Created payment with id = " + createdPayment.getId() + " and status = " + createdPayment.getState());
+
+
+            // ###Payment Approval Url
+            Iterator<Links> links = createdPayment.getLinks().iterator();
+            while (links.hasNext()) {
+                Links link = links.next();
+                System.out.println(" approval_url " + link.getHref());
+                if (link.getRel().equalsIgnoreCase("approval_url")) {
+                    approval_url = link.getHref();
+                    System.out.println(" ******************************approval_url****************************** ");
+                    System.out.println(" approval_url " + link.getHref());
+                    System.out.println(" ******************************approval_url****************************** ");
+                }
+            }
+
+            System.out.println(" Payment.getLastRequest() " + Payment.getLastRequest());
+
+            System.out.println(" Payment.getLastRequest() " + Payment.getLastResponse());
+
+            System.out.println(" Payment.getLastRequest() " + createdPayment.getId());
+
+            return createdPayment;
+
+        } catch (PayPalRESTException e) {
+
+            e.printStackTrace();
+
+        }
+        return null;
+    }
+
+
 
     //Embedded payment.                
     @Override

@@ -24,6 +24,8 @@ public interface PaymentService {
     public Payment pay() throws Exception;
     
     public String getPayment(String paymentId, String token) throws Exception  ;
+
+    public Payment createCreditCardPayment() throws Exception ;
     
     public WebProfile createExperienceProfile(String profileName ) throws Exception;
     

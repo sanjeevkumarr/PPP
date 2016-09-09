@@ -1,7 +1,9 @@
 package com.mkyong.helloworld.web;
 
-import java.util.Map;
-
+import com.mkyong.helloworld.service.HelloWorldService;
+import com.mkyong.helloworld.service.PaymentService;
+import com.paypal.api.payments.Links;
+import com.paypal.api.payments.Payment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,16 +11,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.mkyong.helloworld.service.HelloWorldService;
-import com.mkyong.helloworld.service.PaymentService;
-import com.paypal.api.payments.Links;
-import com.paypal.api.payments.Payment;
 import java.util.Iterator;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.RequestParam;
+import java.util.Map;
+
 
 @Controller
 public class WelcomeController {
@@ -71,6 +71,51 @@ public class WelcomeController {
         return "index";
     }
 
+
+    @RequestMapping(value = "/credit", method = RequestMethod.GET)
+    public String creditCard(Map<String, Object> model) {
+        try {
+            logger.info("BEFORE PAY ");
+            Payment createdPayment = paymentService.createCreditCardPayment();
+
+            Iterator<Links> links = createdPayment.getLinks().iterator();
+
+
+            while (links.hasNext()) {
+                Links link = links.next();
+                if (link.getRel().equalsIgnoreCase("approval_url")) {
+                    String approval_url = link.getHref();
+                    model.put("approval_url", approval_url);
+                    System.out.println(" ******************************approval_url****************************** ");
+                    System.out.println(" approval_url " + link.getHref());
+                    System.out.println(" ******************************approval_url****************************** ");
+                } else if (link.getRel().equalsIgnoreCase("self")) {
+                    model.put("token", link.getHref());
+                }
+            }
+
+            model.put("token", createdPayment);
+            logger.info("AFTYER PAY ");
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "cancel";
+        }
+
+        logger.debug("index() is executed!");
+
+        model.put("title", helloWorldService.getTitle(""));
+
+        model.put("msg", helloWorldService.getDesc());
+
+        return "success";
+    }
+
+
+
+
     @RequestMapping(value = "/hello/{name:.+}", method = RequestMethod.GET)
     public ModelAndView hello(@PathVariable("name") String name) {
 
@@ -84,6 +129,7 @@ public class WelcomeController {
 
         return model;
     }
+
 
     @RequestMapping(value = "/success", method = RequestMethod.GET)
     public String succes(@RequestParam("paymentId") String paymentId, @RequestParam("token") String token, Map<String, Object> model) {
