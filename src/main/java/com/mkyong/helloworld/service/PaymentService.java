@@ -10,6 +10,7 @@ import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.WebProfile;
 import com.paypal.base.rest.PayPalRESTException;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 
@@ -29,4 +30,9 @@ public interface PaymentService {
     public  WebProfile getWebProfileById(String profileId) throws PayPalRESTException;
     
     public List<WebProfile> getAllWebProfile() throws PayPalRESTException ;    
+    
+    public Map<String, Object>  embeddedPayment(Map<String, Object> model) throws Exception;
+    
+    
+    public String doDirectPayment() throws Exception ;
 }

@@ -9,6 +9,7 @@
         <spring:url value="/resources/core/css/bootstrap.min.css" var="bootstrapCss" />
         <link href="${bootstrapCss}" rel="stylesheet" />
         <link href="${coreCss}" rel="stylesheet" />
+        <script src="https://www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>
     </head>
 
     <!--
@@ -74,13 +75,8 @@
 
     -->
 
-    <spring:url value="/resources/core/css/hello.js" var="coreJs" />
-    <spring:url value="/resources/core/css/bootstrap.min.js" var="bootstrapJs" />
 
-    <script src="${coreJs}"></script>
-    <script src="${bootstrapJs}"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <script src="https://www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>
+
 
     <div id="ppplus" > </div>
 
@@ -100,28 +96,36 @@
             //            "disableContinue":"continueButton",
             //            "enableContinue": "continueButton",
             "mode": "sandbox",});
+    
+    //            "disableContinue":"continueButton",
+//            "enableContinue": "continueButton",                    
+//            "payerFirstName" :"test",
+//            "payerLastName" :"buyer",
+//            "payerEmail" :"paypal2-buyer@rsantosit.com.br",
+//            "payerPhone" :"1234567892",
+//            "payerTaxId" :"30949017787",
+//            "payerTaxIdType" :"BR_CPF",
+
         </script>
     -->    
     <!--<iframe src="${approval_url}"> </iframe>-->
-        
+
     <script type="application/javascript">
             var ppp = PAYPAL.apps.PPP({
-            "approvalUrl": "${approval_url}",
-            "placeholder": "ppplus",
-            "mode": "sandbox",
-            "country": "DE"
+                "approvalUrl": "${approval_url}",
+                "placeholder": "ppplus",
+                "mode": "sandbox"                                
             });
-            
-    
-        </script> 
-    
-<!--
+    </script>     
+
     <script type="text/javascript">
-        
-        function myFunction() {
-            window.open("${approval_url}", "_blank", "width=1024,height=768,location=1,resizable=1,scrollbars=1,status=1", true);
-        }
-    </script>-->
+
+function myFunction() {
+    window.open("${approval_url}", "_blank", "width=1024,height=768,location=1,resizable=1,scrollbars=1,status=1", true);
+}
+
+    </script>
+
 
 
     <button type="submit"          

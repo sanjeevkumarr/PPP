@@ -16,6 +16,8 @@ import com.mkyong.helloworld.service.PaymentService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import java.util.Iterator;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -37,7 +39,9 @@ public class WelcomeController {
         try {
             logger.info("BEFORE PAY ");
             Payment createdPayment = paymentService.pay();
-
+                   
+            model.put("createdPayment", createdPayment);
+            
             Iterator<Links> links = createdPayment.getLinks().iterator();
             while (links.hasNext()) {
                 Links link = links.next();
@@ -47,13 +51,13 @@ public class WelcomeController {
                     System.out.println(" ******************************approval_url****************************** ");
                     System.out.println(" approval_url " + link.getHref());
                     System.out.println(" ******************************approval_url****************************** ");
-                } else if (link.getRel().equalsIgnoreCase("self")) {                                        
+                } else if (link.getRel().equalsIgnoreCase("self")) {
                     model.put("token", link.getHref());
                 }
             }
-model.put("token", createdPayment);
+            model.put("token", createdPayment);
             logger.info("AFTYER PAY ");
-            
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -108,23 +112,43 @@ model.put("token", createdPayment);
 
         return "cancel";
     }
-    
-    
+
     @RequestMapping(value = "/profile", method = RequestMethod.GET)
     public String experienceProfile(Map<String, Object> model) {
-        
-        try {            
-            model.put("allProfiles", paymentService.getAllWebProfile());                         
+
+        try {
+            model.put("allProfiles", paymentService.getAllWebProfile());
             model.put("newProfile", paymentService.createExperienceProfile("FogPanel_BR"));
-            model.put("latestProfiles", paymentService.getAllWebProfile());            
-            
-        } catch (Exception ex )  {
-            
-            ex.printStackTrace();            
-            
+            model.put("latestProfiles", paymentService.getAllWebProfile());
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
             return "error";
         }
 
         return "profile";
-    }    
+    }
+
+    @RequestMapping(value = "/embedded", method = RequestMethod.GET)
+    public String embeded(Map<String, Object> model, HttpServletRequest request,
+            HttpServletResponse response) {
+        
+        try {
+////            model = paymentService.embeddedPayment(model);
+//            
+//            System.out.println("(String) model.get(\"URL\")  " + (String) model.get("URL"));
+//            
+//            model.put("approval_url", (String) model.get("URL"));
+            
+            paymentService.doDirectPayment();
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return "error";
+        }
+        
+        return "embed";
+    }
 }
