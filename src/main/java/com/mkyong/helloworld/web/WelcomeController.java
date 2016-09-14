@@ -164,7 +164,7 @@ public class WelcomeController {
 
         try {
             model.put("allProfiles", paymentService.getAllWebProfile());
-            model.put("newProfile", paymentService.createExperienceProfile("FogPanel_BR"));
+            model.put("newProfile", paymentService.createExperienceProfile("ONDA_BR"));
             model.put("latestProfiles", paymentService.getAllWebProfile());
 
         } catch (Exception ex) {

@@ -15,8 +15,8 @@ public class APIConstants {
     public static String secretId = "EGaLvYJMIkkloUd36kEhZ7z1qnGUwvQXIIjor7JzGbM5qaUBLc-S5DLSkcjHUOGSuL7_wc-GepxmeWcJ"; 
     public static String mode = "sandbox"; 
     
-//    public static String clientId = "AbRAUKu0ZkwihHEr7HL4XrYGsw54BiG_cs6V2TZMuCIHPk6b3ZB6xXBwhRM57l6QUbT-hOg5c3YG2RI9"; 
-//    public static String secretId = "EHVUZabMLZXnuM-qBbE4LmSQRr5AYvk3pW9hnnAUIDZCfbAa9khVvHUWqCrWmpMOt3Qo-rxztxFiVuX8"; 
+//    public static String clientId = "AUm1Nu7O6Ig9ct1ocihm3YLmBSCLuV1se_JcJaL6iuuvoebuALtVDSL5XA44Onm3KyqU6WB0zjMZdB0F"; 
+//    public static String secretId = "EGwXb21IZ2cAsHY0kD1tQY24IoJb6ReQskkjUAgl7U4A0zInBYVdnhb7cIsnPkPg0MbFOvCk_hCzaeri"; 
 //    public static String mode = "sandbox"; 
     
 }

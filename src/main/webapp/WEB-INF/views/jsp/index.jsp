@@ -7,9 +7,14 @@
 
         <spring:url value="/resources/core/css/hello.css" var="coreCss" />
         <spring:url value="/resources/core/css/bootstrap.min.css" var="bootstrapCss" />
+        <spring:url value="/resources/core/js/ppplusdcc.js" var="ppplus1" />
         <link href="${bootstrapCss}" rel="stylesheet" />
         <link href="${coreCss}" rel="stylesheet" />
-        <script src="https://www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>
+        
+
+        <!--<script src="https://www.paypalobjects.com/webstatic/ppplus/ppplus.min.js" type="text/javascript"></script>-->
+        <!--<script src="https://www.paypalobjects.com/webstatic/ppplusdcc/ppplusdcc.min.js" type="text/javascript"></script>-->
+        <script src="${ppplus1}" type="text/javascript"></script>
     </head>
 
     <!--
@@ -114,13 +119,19 @@
             var ppp = PAYPAL.apps.PPP({
                 "approvalUrl": "${approval_url}",
                 "placeholder": "ppplus",
-                "mode": "sandbox"                                
+                "mode": "sandbox",                                
+                "payerFirstName": "test",                               
+                "payerLastName": "buyer",                                
+                "payerEmail": "paypal2-buyer@rsantosit.com.br",                                
+                "payerTaxId": "30949017787", 
+                "buttonLocation": "outside",               
+                "enableContinue": "continueButton",
             });
 
-    
-        </script> 
-    
-<!--
+
+    </script> 
+
+
 
     <script type="text/javascript">
 
@@ -130,16 +141,14 @@ function myFunction() {
 
     </script>
 
+    <!--
+            function myFunction() {
+                window.open("${approval_url}", "_blank", "width=1024,height=768,location=1,resizable=1,scrollbars=1,status=1", true);
+            }
+        </script>-->
 
-        function myFunction() {
-            window.open("${approval_url}", "_blank", "width=1024,height=768,location=1,resizable=1,scrollbars=1,status=1", true);
-        }
-    </script>-->
 
-
-    <button type="submit"
-            id="continueButton"
-            onclick="myFunction()">Checkout
+    <button id="continueButton" onclick="ppp.doContinue();">Checkout
     </button>
 
 

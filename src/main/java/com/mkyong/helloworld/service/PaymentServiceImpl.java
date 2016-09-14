@@ -160,6 +160,7 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setIntent("sale");
         payment.setPayer(payer);
         payment.setTransactions(transactions);
+        payment.setExperienceProfileId("XP-G3Z5-9NMS-FCGR-5F9U");
 
         // ###Redirect URLs
         RedirectUrls redirectUrls = new RedirectUrls();
@@ -201,7 +202,7 @@ public class PaymentServiceImpl implements PaymentService {
     public String getPayment(String paymentId, String token) throws Exception {
 
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
-
+//
         Payment createdPayment = Payment.get(apiContext, paymentId);
 
         System.out.println("createdPayment " + createdPayment.getIntent());
@@ -209,10 +210,13 @@ public class PaymentServiceImpl implements PaymentService {
         System.out.println("createdPayment " + createdPayment.getPayer());
 
         PaymentExecution paymentExecution = new PaymentExecution();
-        paymentExecution.setPayerId(createdPayment.getPayer().getPayerInfo().getPayerId());
+        paymentExecution.setPayerId("46VNWJGHEHKNG");        
+        
         try {
+            
             createdPayment = createdPayment.execute(apiContext, paymentExecution);
-//            System.out.println("Executed The Payment" + Payment.getLastRequest());
+            System.out.println("Executed The Payment" + Payment.getLastRequest());
+            System.out.println("Executed The Payment" + Payment.getLastResponse());
             System.out.println("Executed The Payment");
 
         } catch (Exception e) {
@@ -242,6 +246,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         webProfile.setInputFields(fields);
         webProfile.setPresentation(presentation);
+        
         CreateProfileResponse response = webProfile.create(apiContext);
 
         System.out.println(" Experience profile id  : " + response.getId());
@@ -281,7 +286,7 @@ public class PaymentServiceImpl implements PaymentService {
         // ###Amount
         // Let's you specify a payment amount.
         Amount amount = new Amount();
-        amount.setCurrency("BRL");
+        amount.setCurrency("USD");
         // Total must be equal to sum of shipping, tax and subtotal.
         amount.setTotal("7");
 //        amount.setDetails(details);
@@ -296,7 +301,7 @@ public class PaymentServiceImpl implements PaymentService {
         System.out.println("adding payment option");
 
 //        transaction.setPaymentOptions(new PaymentOptions().setAllowedPaymentMethod("IMMEDIATE_PAY"));
-        transaction.setAmount(amount);
+//        transaction.setAmount(amount);
         transaction.setDescription("This is the payment transaction description.");
 
 
@@ -307,26 +312,30 @@ public class PaymentServiceImpl implements PaymentService {
         FundingInstrument  fundingInstrument  = new FundingInstrument();
         CreditCard  creditCard = new CreditCard();
 
-//        creditCard.setNumber("4002350589119162");
+        creditCard.setNumber("5229784639382079");
+        creditCard.setType("mastercard");
+        creditCard.setExpireMonth(9);
+        creditCard.setExpireYear(2021);
+        creditCard.setCvv2(123);
+        creditCard.setFirstName("personalbr");
+        creditCard.setLastName("personalbr");
+        fundingInstrument.setCreditCard(creditCard);
+        
+                
+
+//For usd:
+//
+//        creditCard.setNumber("4032038243629304");
 //        creditCard.setType("VISA");
 //        creditCard.setExpireMonth(9);
 //        creditCard.setExpireYear(2021);
 //        creditCard.setCvv2(123);
 //        creditCard.setFirstName("test");
-//        creditCard.setLastName("buyer");
-
-//For usd:
-//
-        creditCard.setNumber("4032038243629304");
-        creditCard.setType("VISA");
-        creditCard.setExpireMonth(9);
-        creditCard.setExpireYear(2021);
-        creditCard.setCvv2(123);
-        creditCard.setFirstName("test");
-        creditCard.setLastName("test");
+//        creditCard.setLastName("test");
 
         List<FundingInstrument>  fundingInstruments = new ArrayList<>();
         fundingInstruments.add(fundingInstrument);
+        
 
 
 
@@ -338,6 +347,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payer payer = new Payer();
         payer.setPaymentMethod("credit_card");
         payer.setFundingInstruments(fundingInstruments);
+        
 
 
         // ###Payment
@@ -349,11 +359,11 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setTransactions(transactions);
 
 //        // ###Redirect URLs
-//        RedirectUrls redirectUrls = new RedirectUrls();
-//        String guid = UUID.randomUUID().toString().replaceAll("-", "");
-//        redirectUrls.setReturnUrl("http://localhost:8080/spring4/success");
-//        redirectUrls.setCancelUrl("http://localhost:8080/spring4/cancel");
-//        payment.setRedirectUrls(redirectUrls);
+        RedirectUrls redirectUrls = new RedirectUrls();
+        String guid = UUID.randomUUID().toString().replaceAll("-", "");
+        redirectUrls.setReturnUrl("http://localhost:8080/spring4/success");
+        redirectUrls.setCancelUrl("http://localhost:8080/spring4/cancel");
+       payment.setRedirectUrls(redirectUrls);
 
         try {
 
