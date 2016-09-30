@@ -7,8 +7,11 @@ package com.mkyong.helloworld.service;
 
 import com.mkyong.helloworld.paymentgateway.Paypal;
 import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.Plan;
 import com.paypal.api.payments.WebProfile;
+import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -37,4 +40,10 @@ public interface PaymentService {
     
     
     public String doDirectPayment() throws Exception ;
+    
+    public Plan create(APIContext context) throws PayPalRESTException, IOException ;
+    
+    public Plan udpatePlan(String id) throws PayPalRESTException, IOException;
+
+    public Plan getPlan(String planId)throws PayPalRESTException, IOException;
 }

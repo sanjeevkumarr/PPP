@@ -197,4 +197,57 @@ public class WelcomeController {
         
         return "embed";
     }
+    
+    
+      @RequestMapping(value = "/plan", method = RequestMethod.GET)
+    public String createPlan(Map<String, Object> model) {
+
+        try {
+            model.put("allProfiles",paymentService.create(null));            
+            
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
+    
+       @RequestMapping(value = "/updatePlan", method = RequestMethod.GET)
+    public String updatePlan(@RequestParam("planId") String planId, Map<String, Object> model) {
+
+        try {
+            
+            model.put("allProfiles",paymentService.udpatePlan(planId));                        
+            
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
+    
+    
+    @RequestMapping(value = "/getPlan", method = RequestMethod.GET)
+    public String getPlan(@RequestParam("planId") String planId, Map<String, Object> model) {
+
+        try {
+            
+            model.put("allProfiles",paymentService.getPlan(planId));                        
+            
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
 }

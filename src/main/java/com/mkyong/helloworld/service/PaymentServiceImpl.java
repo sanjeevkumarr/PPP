@@ -7,9 +7,11 @@ package com.mkyong.helloworld.service;
 
 import com.mkyong.helloworld.paymentgateway.Paypal;
 import com.paypal.api.payments.Amount;
+import com.paypal.api.payments.ChargeModels;
 import com.paypal.api.payments.CreateProfileResponse;
 import com.paypal.api.payments.CreditCard;
 import com.paypal.api.payments.CreateProfileResponse;
+import com.paypal.api.payments.Currency;
 import com.paypal.api.payments.Details;
 import com.paypal.api.payments.FlowConfig;
 import com.paypal.api.payments.InputFields;
@@ -19,17 +21,23 @@ import com.paypal.api.payments.InputFields;
 import com.paypal.api.payments.Item;
 import com.paypal.api.payments.ItemList;
 import com.paypal.api.payments.Links;
+import com.paypal.api.payments.MerchantPreferences;
+import com.paypal.api.payments.Patch;
+import com.paypal.api.payments.PatchRequest;
 import com.paypal.api.payments.Payer;
 import com.paypal.api.payments.PayerInfo;
 import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.PaymentDefinition;
 import com.paypal.api.payments.PaymentExecution;
 import com.paypal.api.payments.PaymentOptions;
+import com.paypal.api.payments.Plan;
 import com.paypal.api.payments.Presentation;
 import com.paypal.api.payments.RedirectUrls;
 import com.paypal.api.payments.ShippingAddress;
 import com.paypal.api.payments.Transaction;
 import com.paypal.api.payments.WebProfile;
 import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import com.paypal.svcs.services.AdaptivePaymentsService;
 import com.paypal.svcs.types.ap.PayRequest;
@@ -37,6 +45,7 @@ import com.paypal.svcs.types.ap.PayResponse;
 import com.paypal.svcs.types.ap.Receiver;
 import com.paypal.svcs.types.ap.ReceiverList;
 import com.paypal.svcs.types.common.RequestEnvelope;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -105,18 +114,19 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment createdPayment = null;
 
+//        Cre
         // ###Details
         // Let's you specify details of a payment amount.
         Details details = new Details();
         details.setShipping("1");
-        details.setSubtotal("5");
+        details.setSubtotal("90");
         details.setTax("1");
         // ###Amount
         // Let's you specify a payment amount.
         Amount amount = new Amount();
         amount.setCurrency("BRL");
         // Total must be equal to sum of shipping, tax and subtotal.
-        amount.setTotal("7");
+        amount.setTotal("92");
         amount.setDetails(details);
         // ###Transaction
         // A transaction defines the contract of a
@@ -133,7 +143,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // ### Items
         Item item = new Item();
-        item.setName("For VM creation").setQuantity("1").setCurrency("BRL").setPrice("5");
+        item.setName("For VM creation").setQuantity("1").setCurrency("BRL").setPrice("90");
         ItemList itemList = new ItemList();
         List<Item> items = new ArrayList<Item>();
         items.add(item);
@@ -165,8 +175,8 @@ public class PaymentServiceImpl implements PaymentService {
         // ###Redirect URLs
         RedirectUrls redirectUrls = new RedirectUrls();
         String guid = UUID.randomUUID().toString().replaceAll("-", "");
-        redirectUrls.setReturnUrl("http://localhost:8080/spring4/success");
-        redirectUrls.setCancelUrl("http://localhost:8080/spring4/cancel");
+        redirectUrls.setReturnUrl("http://localhost:8090/spring4/success");
+        redirectUrls.setCancelUrl("http://localhost:8090/spring4/cancel");
         payment.setRedirectUrls(redirectUrls);
 
         try {
@@ -189,6 +199,7 @@ public class PaymentServiceImpl implements PaymentService {
             System.out.println(" Payment.getLastRequest() " + Payment.getLastRequest());
             System.out.println(" Payment.getLastRequest() " + Payment.getLastResponse());
             System.out.println(" Payment.getLastRequest() " + createdPayment.getId());
+            System.out.println(" Payment.getLastRequest() " + createdPayment);
 
             return createdPayment;
 
@@ -205,15 +216,15 @@ public class PaymentServiceImpl implements PaymentService {
 //
         Payment createdPayment = Payment.get(apiContext, paymentId);
 
-        System.out.println("createdPayment " + createdPayment.getIntent());
-        System.out.println("createdPayment " + createdPayment.getState());
-        System.out.println("createdPayment " + createdPayment.getPayer());
+        System.out.println("getIntent " + createdPayment.getIntent());
+        System.out.println("getState " + createdPayment.getState());
+        System.out.println("getPayer " + createdPayment.getPayer());
 
         PaymentExecution paymentExecution = new PaymentExecution();
-        paymentExecution.setPayerId("46VNWJGHEHKNG");        
-        
+        paymentExecution.setPayerId("46VNWJGHEHKNG");
+
         try {
-            
+
             createdPayment = createdPayment.execute(apiContext, paymentExecution);
             System.out.println("Executed The Payment" + Payment.getLastRequest());
             System.out.println("Executed The Payment" + Payment.getLastResponse());
@@ -246,7 +257,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         webProfile.setInputFields(fields);
         webProfile.setPresentation(presentation);
-        
+
         CreateProfileResponse response = webProfile.create(apiContext);
 
         System.out.println(" Experience profile id  : " + response.getId());
@@ -268,12 +279,12 @@ public class PaymentServiceImpl implements PaymentService {
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
         return WebProfile.getList(apiContext);
     }
-    
+
     public Payment createCreditCardPayment() throws Exception {
 
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
 
-        System.out.println("Getting API context : " + apiContext );
+        System.out.println("Getting API context : " + apiContext);
 
         Payment createdPayment = null;
 
@@ -304,13 +315,11 @@ public class PaymentServiceImpl implements PaymentService {
 //        transaction.setAmount(amount);
         transaction.setDescription("This is the payment transaction description.");
 
-
-
         List<Transaction> transactions = new ArrayList<Transaction>();
         transactions.add(transaction);
 
-        FundingInstrument  fundingInstrument  = new FundingInstrument();
-        CreditCard  creditCard = new CreditCard();
+        FundingInstrument fundingInstrument = new FundingInstrument();
+        CreditCard creditCard = new CreditCard();
 
         creditCard.setNumber("5229784639382079");
         creditCard.setType("mastercard");
@@ -320,8 +329,6 @@ public class PaymentServiceImpl implements PaymentService {
         creditCard.setFirstName("personalbr");
         creditCard.setLastName("personalbr");
         fundingInstrument.setCreditCard(creditCard);
-        
-                
 
 //For usd:
 //
@@ -332,13 +339,8 @@ public class PaymentServiceImpl implements PaymentService {
 //        creditCard.setCvv2(123);
 //        creditCard.setFirstName("test");
 //        creditCard.setLastName("test");
-
-        List<FundingInstrument>  fundingInstruments = new ArrayList<>();
+        List<FundingInstrument> fundingInstruments = new ArrayList<>();
         fundingInstruments.add(fundingInstrument);
-        
-
-
-
 
         // ###Payer
         // A resource representing a Payer that funds a payment
@@ -347,8 +349,6 @@ public class PaymentServiceImpl implements PaymentService {
         Payer payer = new Payer();
         payer.setPaymentMethod("credit_card");
         payer.setFundingInstruments(fundingInstruments);
-        
-
 
         // ###Payment
         // A Payment Resource; create one using
@@ -363,7 +363,7 @@ public class PaymentServiceImpl implements PaymentService {
         String guid = UUID.randomUUID().toString().replaceAll("-", "");
         redirectUrls.setReturnUrl("http://localhost:8080/spring4/success");
         redirectUrls.setCancelUrl("http://localhost:8080/spring4/cancel");
-       payment.setRedirectUrls(redirectUrls);
+        payment.setRedirectUrls(redirectUrls);
 
         try {
 
@@ -371,9 +371,7 @@ public class PaymentServiceImpl implements PaymentService {
 
             createdPayment = payment.create(apiContext);
 
-
             System.out.println("Created payment with id = " + createdPayment.getId() + " and status = " + createdPayment.getState());
-
 
             // ###Payment Approval Url
             Iterator<Links> links = createdPayment.getLinks().iterator();
@@ -403,8 +401,6 @@ public class PaymentServiceImpl implements PaymentService {
         }
         return null;
     }
-
-
 
     //Embedded payment.                
     @Override
@@ -482,7 +478,6 @@ public class PaymentServiceImpl implements PaymentService {
 //        configMap.put("acct1.Password", "YZJCEHLD97QKCWQU");
 //        configMap.put("acct1.Signature", "An5ns1Kso7MWUdW4ErQKJJJ4qi4-A2fni5Uo0sejwAJfuRN1d167ZJy7");
 //        configMap.put("acct1.AppId", "APP-80W284485P519543T");
-        
         configMap.put("acct1.UserName", "business_api1.fogpanel.com");
         configMap.put("acct1.Password", "ZY36R677MGTS4D7T");
         configMap.put("acct1.Signature", "AFcWxV21C7fd0v3bYYYRCpSSRl31A6tLbkU.DxV6Qi5f5d6p.cWTgyZc");
@@ -506,7 +501,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public String doDirectPayment() throws Exception  {
+    public String doDirectPayment() throws Exception {
 
         DoDirectPaymentReq doPaymentReq = new DoDirectPaymentReq();
         DoDirectPaymentRequestType pprequest = new DoDirectPaymentRequestType();
@@ -551,14 +546,14 @@ public class PaymentServiceImpl implements PaymentService {
         details.setPaymentAction(PaymentActionCodeType.fromValue("Sale"));
         pprequest.setDoDirectPaymentRequestDetails(details);
         doPaymentReq.setDoDirectPaymentRequest(pprequest);
-        System.out.println( " <=================== Before request ===================> " );
+        System.out.println(" <=================== Before request ===================> ");
         try {
 
             Map<String, String> configurationMap = getAcctAndConfig();
             PayPalAPIInterfaceServiceService service = new PayPalAPIInterfaceServiceService(configurationMap);
 
             DoDirectPaymentResponseType ddresponse = service.doDirectPayment(doPaymentReq);
-            System.out.println( " <=================== after request ===================> " + ddresponse );
+            System.out.println(" <=================== after request ===================> " + ddresponse);
 
             if (ddresponse != null) {
 
@@ -569,19 +564,138 @@ public class PaymentServiceImpl implements PaymentService {
                     map.put("Transaction ID", ddresponse.getTransactionID());
                     map.put("Amount", ddresponse.getAmount().getValue() + " " + ddresponse.getAmount().getCurrencyID());
                     map.put("Payment Status", ddresponse.getPaymentStatus());
-                    
-                    System.out.println( " map ===================> " + map);
+                    map.put("Payment Status", ddresponse.getTransactionID());
+
+                    System.out.println(" map ===================> " + map);
                 } else {
-                    System.out.println( " <=================== ddresponse.getAck().toString().equalsIgnoreCase(\"SUCCESS\") ===================> " + ddresponse.getAck().toString().equalsIgnoreCase("SUCCESS"));
+                    System.out.println(" <=================== ddresponse.getAck().toString().equalsIgnoreCase(\"SUCCESS\") ===================> " + ddresponse.getAck().toString().equalsIgnoreCase("SUCCESS"));
                 }
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            
+
             ex.getMessage();
         }
 
+        return null;
+    }
+
+    @Override
+    public Plan create(APIContext context) throws PayPalRESTException, IOException {
+
+        // populate Plan object that we are going to play with
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+
+        Plan plan = new Plan();
+        plan.setName("Plan-one");
+        plan.setDescription("Plan-one -TEST ");
+        plan.setType("fixed");
+
+        List<PaymentDefinition> definitions = new ArrayList<>();
+        PaymentDefinition definition = new PaymentDefinition();
+        definition.setName("definition name ");
+        definition.setType("REGULAR");
+        definition.setFrequency("MONTH");
+        definition.setFrequencyInterval("2");
+        definition.setCycles("12");
+        Currency currency = new Currency();
+        currency.setCurrency("BRL");
+        currency.setValue("100");
+        definition.setAmount(currency);
+        definitions.add(definition);
+
+        ChargeModels chargeModels = new ChargeModels();
+        chargeModels.setAmount(currency);
+        chargeModels.setType("SHIPPING");
+        List<ChargeModels> modelses = new ArrayList<>();
+        modelses.add(chargeModels);
+
+        definition.setChargeModels(modelses);
+
+        MerchantPreferences mp = new MerchantPreferences();
+        mp.setSetupFee(currency);
+        mp.setCancelUrl("http://localhost:8080/spring4/cancel");
+        mp.setReturnUrl("http://localhost:8080/spring4/success");
+        mp.setAutoBillAmount("YES");
+        mp.setInitialFailAmountAction("CONTINUE");
+        mp.setMaxFailAttempts("0");
+
+        plan.setPaymentDefinitions(definitions);
+        plan.setMerchantPreferences(mp);
+
+        System.out.println("createdPlan   " + plan);
+        Plan createdPlan = plan.create(apiContext);
+
+        System.out.println("createdPlan   " + createdPlan.getLastRequest());
+        System.out.println("createdPlan   " + createdPlan.getLastResponse());
+
+        return createdPlan;
+    }
+
+    public Plan udpatePlan(String id) throws PayPalRESTException, IOException {
+
+        // populate Plan object that we are going to play with
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+
+        Patch patch = new Patch();
+//        PayPalModel model = new PayPalModel();
+
+        patch.setOp("replace");
+        patch.setPath("/");
+        
+        
+        HashMap map = new HashMap();
+        
+        map.put("state", "ACTIVE");
+        
+        patch.setValue(map);
+
+        List<Patch> patchRequests = new ArrayList();
+        patchRequests.add(patch);
+
+        Plan plan = new Plan();
+//        plan = plan.get(apiContext, id);        
+        plan = plan.setId(id);        
+
+//        System.out.println("getPlan   " + plan.getLastRequest());
+        System.out.println("patchRequests   " + plan);
+        System.out.println("patchRequests   " + patchRequests);
+
+        plan.update(apiContext, patchRequests);
+
+//        System.out.println("updatePlan   " + plan.getLastRequest());
+//        System.out.println("updatePlan   " + plan.getLastResponse());
+
+        plan.get(apiContext, id);
+
+        System.out.println("getLastRequest   ************->" + plan.getLastRequest());
+        System.out.println("getLastResponse   ***********->" + plan.getLastResponse());
+
+        return null;
+    }
+    
+    /**
+     *
+     * @param id
+     * @return
+     * @throws PayPalRESTException
+     * @throws IOException
+     */
+    @Override
+    public Plan getPlan(String id) throws PayPalRESTException, IOException {
+        
+        // populate Plan object that we are going to play with
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+        
+        Plan plan = new Plan();
+//        plan = plan.get(apiContext, id);        
+        plan = plan.setId(id);   
+        
+        Plan res = plan.get(apiContext, id);
+        
+        System.out.println("plan details -------------> " + res);
+        
         return null;
     }
 
