@@ -6,6 +6,7 @@
 package com.mkyong.helloworld.service;
 
 import com.mkyong.helloworld.paymentgateway.Paypal;
+import com.paypal.api.payments.Agreement;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.Plan;
 import com.paypal.api.payments.WebProfile;
@@ -46,4 +47,19 @@ public interface PaymentService {
     public Plan udpatePlan(String id) throws PayPalRESTException, IOException;
 
     public Plan getPlan(String planId)throws PayPalRESTException, IOException;
+    
+    public Agreement createBillingAgreement()throws PayPalRESTException, IOException;
+    
+    public Agreement executeBillingAgreement(String token)throws PayPalRESTException, IOException;
+    
+    public String payWithSavedCard()throws PayPalRESTException, IOException;
+    
+    public void createRecuringCCProfile() throws PayPalRESTException, Exception  ;
+    
+//    public Agreement getBillingAgreement(String id)throws PayPalRESTException, IOException;
+    
+    public String one() throws Exception;
+    public Agreement getBa(String id) throws Exception;
+
+    public void two()throws Exception;
 }

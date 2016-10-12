@@ -5,12 +5,16 @@
  */
 package com.mkyong.helloworld.service;
 
+import ch.qos.logback.core.net.ObjectWriter;
 import com.mkyong.helloworld.paymentgateway.Paypal;
+import com.paypal.api.payments.Address;
+import com.paypal.api.payments.Agreement;
 import com.paypal.api.payments.Amount;
 import com.paypal.api.payments.ChargeModels;
 import com.paypal.api.payments.CreateProfileResponse;
 import com.paypal.api.payments.CreditCard;
 import com.paypal.api.payments.CreateProfileResponse;
+import com.paypal.api.payments.CreditCardToken;
 import com.paypal.api.payments.Currency;
 import com.paypal.api.payments.Details;
 import com.paypal.api.payments.FlowConfig;
@@ -37,39 +41,77 @@ import com.paypal.api.payments.ShippingAddress;
 import com.paypal.api.payments.Transaction;
 import com.paypal.api.payments.WebProfile;
 import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.OAuthTokenCredential;
 import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import com.paypal.svcs.services.AdaptivePaymentsService;
 import com.paypal.svcs.types.ap.PayRequest;
 import com.paypal.svcs.types.ap.PayResponse;
+import com.paypal.svcs.types.ap.PaymentDetailsRequest;
+import com.paypal.svcs.types.ap.PaymentDetailsResponse;
 import com.paypal.svcs.types.ap.Receiver;
 import com.paypal.svcs.types.ap.ReceiverList;
+import com.paypal.svcs.types.ap.SenderIdentifier;
+import com.paypal.svcs.types.ap.TaxIdDetails;
 import com.paypal.svcs.types.common.RequestEnvelope;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 import javax.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
+import urn.ebay.api.PayPalAPI.CreateBillingAgreementReq;
+import urn.ebay.api.PayPalAPI.CreateBillingAgreementRequestType;
+import urn.ebay.api.PayPalAPI.CreateBillingAgreementResponseType;
+import urn.ebay.api.PayPalAPI.CreateRecurringPaymentsProfileReq;
+import urn.ebay.api.PayPalAPI.CreateRecurringPaymentsProfileRequestType;
+import urn.ebay.api.PayPalAPI.CreateRecurringPaymentsProfileResponseType;
 import urn.ebay.api.PayPalAPI.DoDirectPaymentReq;
 import urn.ebay.api.PayPalAPI.DoDirectPaymentRequestType;
 import urn.ebay.api.PayPalAPI.DoDirectPaymentResponseType;
+import urn.ebay.api.PayPalAPI.DoReferenceTransactionReq;
+import urn.ebay.api.PayPalAPI.DoReferenceTransactionRequestType;
+import urn.ebay.api.PayPalAPI.DoReferenceTransactionResponseType;
 import urn.ebay.api.PayPalAPI.PayPalAPIInterfaceServiceService;
+import urn.ebay.api.PayPalAPI.SetExpressCheckoutReq;
+import urn.ebay.api.PayPalAPI.SetExpressCheckoutRequestType;
+import urn.ebay.api.PayPalAPI.SetExpressCheckoutResponseType;
 import urn.ebay.apis.CoreComponentTypes.BasicAmountType;
 import urn.ebay.apis.eBLBaseComponents.AddressType;
+import urn.ebay.apis.eBLBaseComponents.BillingAgreementDetailsType;
+import urn.ebay.apis.eBLBaseComponents.BillingCodeType;
+import urn.ebay.apis.eBLBaseComponents.BillingPeriodDetailsType;
+import urn.ebay.apis.eBLBaseComponents.BillingPeriodType;
+import urn.ebay.apis.eBLBaseComponents.BuyerDetailsType;
 import urn.ebay.apis.eBLBaseComponents.CountryCodeType;
+import urn.ebay.apis.eBLBaseComponents.CreateRecurringPaymentsProfileRequestDetailsType;
 import urn.ebay.apis.eBLBaseComponents.CreditCardDetailsType;
 import urn.ebay.apis.eBLBaseComponents.CreditCardTypeType;
 import urn.ebay.apis.eBLBaseComponents.CurrencyCodeType;
+import urn.ebay.apis.eBLBaseComponents.DetailLevelCodeType;
 import urn.ebay.apis.eBLBaseComponents.DoDirectPaymentRequestDetailsType;
+import urn.ebay.apis.eBLBaseComponents.DoReferenceTransactionRequestDetailsType;
+import urn.ebay.apis.eBLBaseComponents.DoReferenceTransactionResponseDetailsType;
+import urn.ebay.apis.eBLBaseComponents.ItemCategoryType;
+import urn.ebay.apis.eBLBaseComponents.MerchantPullPaymentCodeType;
 import urn.ebay.apis.eBLBaseComponents.PayerInfoType;
 import urn.ebay.apis.eBLBaseComponents.PaymentActionCodeType;
+import urn.ebay.apis.eBLBaseComponents.PaymentDetailsItemType;
 import urn.ebay.apis.eBLBaseComponents.PaymentDetailsType;
+import urn.ebay.apis.eBLBaseComponents.PaymentRequestInfoType;
 import urn.ebay.apis.eBLBaseComponents.PersonNameType;
+import urn.ebay.apis.eBLBaseComponents.RecurringPaymentsProfileDetailsType;
+import urn.ebay.apis.eBLBaseComponents.ScheduleDetailsType;
+import urn.ebay.apis.eBLBaseComponents.SetExpressCheckoutRequestDetailsType;
 
 //import com.paypal.sdk.profiles.APIProfile; 
 //import com.paypal.sdk.profiles.ProfileFactory; 
@@ -515,7 +557,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         //Get payer address
         AddressType shipTo = new AddressType();
-        shipTo.setName("personalbr" + " " + "personalbr");
+        shipTo.setName("test" + " " + "facilitator");
         shipTo.setStreet1("1234 Main Street");
         shipTo.setCityName("Rio De Janeiro");
         shipTo.setStateOrProvince("RL");
@@ -525,8 +567,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         //Get credit card details.
         CreditCardDetailsType cardDetails = new CreditCardDetailsType();
-        cardDetails.setCreditCardType(CreditCardTypeType.fromValue("MasterCard"));
-        cardDetails.setCreditCardNumber("5229784639382079");
+        cardDetails.setCreditCardType(CreditCardTypeType.fromValue("Visa"));
+        cardDetails.setCreditCardNumber("4002350589119162");
         cardDetails.setExpMonth(Integer.parseInt("09"));
         cardDetails.setExpYear(Integer.parseInt("2021"));
         cardDetails.setCVV2("123");
@@ -534,8 +576,8 @@ public class PaymentServiceImpl implements PaymentService {
         //Payer info.
         PayerInfoType payer = new PayerInfoType();
         PersonNameType name = new PersonNameType();
-        name.setFirstName("personalbr");
-        name.setLastName("personalbr");
+        name.setFirstName("test");
+        name.setLastName("buyer");
         payer.setPayerName(name);
         payer.setPayerCountry(CountryCodeType.fromValue("BR"));
         payer.setAddress(shipTo);
@@ -596,12 +638,12 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentDefinition definition = new PaymentDefinition();
         definition.setName("definition name ");
         definition.setType("REGULAR");
-        definition.setFrequency("MONTH");
-        definition.setFrequencyInterval("2");
-        definition.setCycles("12");
+        definition.setFrequency("DAY");
+        definition.setFrequencyInterval("1");
+        definition.setCycles("15");
         Currency currency = new Currency();
         currency.setCurrency("BRL");
-        currency.setValue("100");
+        currency.setValue("50");
         definition.setAmount(currency);
         definitions.add(definition);
 
@@ -615,8 +657,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         MerchantPreferences mp = new MerchantPreferences();
         mp.setSetupFee(currency);
-        mp.setCancelUrl("http://localhost:8080/spring4/cancel");
-        mp.setReturnUrl("http://localhost:8080/spring4/success");
+        mp.setCancelUrl("http://localhost:8090/spring4/cancel");
+        mp.setReturnUrl("http://localhost:8090/spring4/approve");
         mp.setAutoBillAmount("YES");
         mp.setInitialFailAmountAction("CONTINUE");
         mp.setMaxFailAttempts("0");
@@ -643,12 +685,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         patch.setOp("replace");
         patch.setPath("/");
-        
-        
+
         HashMap map = new HashMap();
-        
-        map.put("state", "ACTIVE");
-        
+
+        Object put = map.put("state", "ACTIVE");
+
         patch.setValue(map);
 
         List<Patch> patchRequests = new ArrayList();
@@ -656,7 +697,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Plan plan = new Plan();
 //        plan = plan.get(apiContext, id);        
-        plan = plan.setId(id);        
+        plan = plan.setId(id);
 
 //        System.out.println("getPlan   " + plan.getLastRequest());
         System.out.println("patchRequests   " + plan);
@@ -666,7 +707,6 @@ public class PaymentServiceImpl implements PaymentService {
 
 //        System.out.println("updatePlan   " + plan.getLastRequest());
 //        System.out.println("updatePlan   " + plan.getLastResponse());
-
         plan.get(apiContext, id);
 
         System.out.println("getLastRequest   ************->" + plan.getLastRequest());
@@ -674,7 +714,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         return null;
     }
-    
+
     /**
      *
      * @param id
@@ -684,19 +724,540 @@ public class PaymentServiceImpl implements PaymentService {
      */
     @Override
     public Plan getPlan(String id) throws PayPalRESTException, IOException {
-        
+
         // populate Plan object that we are going to play with
         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
-        
+
         Plan plan = new Plan();
 //        plan = plan.get(apiContext, id);        
-        plan = plan.setId(id);   
-        
+        plan = plan.setId(id);
+
         Plan res = plan.get(apiContext, id);
         
-        System.out.println("plan details -------------> " + res);
+//        List<PaymentDefinition> definitions  = res.getPaymentDefinitions();
+//        for(PaymentDefinition definition : definitions) {
+//            List<ChargeModels> chargeModelses  =  definition.getChargeModels();
+//            for(ChargeModels chargeModels :chargeModelses ) {                
+//                System.out.println("Before *************************** " );
+//                System.out.println("Currency " + chargeModels.getAmount().getCurrency());
+//                System.out.println("Value " + chargeModels.getAmount().getValue());                
+//                System.out.println("Before *************************** " );
+//                
+//                Currency currency = new Currency();
+//                currency.setCurrency("BRL");
+//                currency.setValue("130");                                
+//                
+//                chargeModels.setAmount(currency);
+//                System.out.println("After 1 *************************** " );
+//                System.out.println("Currency " + chargeModels.getAmount().getCurrency());
+//                System.out.println("Value " + chargeModels.getAmount().getValue());                
+//                System.out.println("After1 *************************** " );                
+//            }
+//        }  
+//        
+//         for (PaymentDefinition definition : definitions) {
+//            List<ChargeModels> chargeModelses = definition.getChargeModels();
+//            for (ChargeModels chargeModels : chargeModelses) {                
+//                System.out.println("After 1 *************************** " );
+//                System.out.println("Currency " + chargeModels.getAmount().getCurrency());
+//                System.out.println("Value " + chargeModels.getAmount().getValue());                
+//                System.out.println("After1 *************************** " );                
+//            }
+//        }
+//        
+//        res.setPaymentDefinitions(definitions);
+//        
+//        
+////         APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+//
+//        Patch patch = new Patch();
+////        PayPalModel model = new PayPalModel();
+//
+//        patch.setOp("replace");
+//        patch.setPath("/");
+//
+//        HashMap map = new HashMap();
+//
+//        Object put = map.put("payment_definitions", definitions );
+//
+//        patch.setValue(map);
+//
+//        List<Patch> patchRequests = new ArrayList();
+//        patchRequests.add(patch);
+//
+////        Plan plan = new Plan();
+////        plan = plan.get(apiContext, id);        
+//        plan = plan.setId(id);
+//        
+//        plan.update(apiContext, patchRequests);
+
+//        System.out.println("updatePlan   " + plan.getLastRequest());
+//        System.out.println("updatePlan   " + plan.getLastResponse());
+//        plan.get(apiContext, id);
+
+//        System.out.println("getLastRequest   ************->" + plan.getLastRequest());
+//        System.out.println("getLastResponse   ***********->" + plan.getLastResponse());
+
         
+        
+
+        System.out.println("plan details -------------> " + res);
+
         return null;
+    }
+
+    @Override
+    public Agreement createBillingAgreement() throws PayPalRESTException, IOException {
+
+        // populate Plan object that we are going to play with
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+
+        Agreement a = new Agreement();
+
+        a.setName("Daily agreement ");
+        a.setDescription("Daily  agreement for 15 days");
+
+//        TimeZone tz = TimeZone.getTimeZone("UTC");
+//        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+//        df.setTimeZone(tz);
+//        String nowAsISO = df.format(new Date());
+//        "2016-010-19T00:37:04Z"
+        a.setStartDate("2016-10-06T00:37:04Z");
+
+        Plan plan = new Plan();
+        plan = plan.setId("P-5HJ40302G8099151TSN5VQPA");
+
+        a.setPlan(plan);
+
+        Address address = new Address();
+
+        address.setCity("Cbe");
+        address.setCountryCode("BR");
+        address.setLine1("1 C K nagar");
+        address.setPhone("8807282182");
+        address.setPostalCode("78954");
+        address.setState("DB");
+
+        a.setShippingAddress(address);
+
+        Payer payer = new Payer();
+        
+//        PayerInfo info = new PayerInfo();
+//        info.setEmail("paypal2-buyer@rsantosit.com.br");
+        
+//        FundingInstrument fi = new FundingInstrument()
+        
+        payer.setPaymentMethod("paypal");
+
+        a.setPayer(payer);
+
+//        System.out.println("a" + a);
+        Agreement newAgreement = a.create(apiContext);
+
+        System.out.println("Created agrrement  ----------------->  " + newAgreement.getLastRequest());
+        System.out.println("Created agrrement  ----------------->  " + newAgreement.getLastResponse());
+        System.out.println("Created token  ----------------->  " + newAgreement.getToken());
+
+//        Agreement executedAgreement = a.execute(apiContext, newAgreement.getToken());
+
+//        System.out.println("executed  agreemtn  " + executedAgreement);
+
+        return null;
+    }
+
+    @Override
+    public Agreement executeBillingAgreement(String  token) throws PayPalRESTException, IOException {
+        
+        
+        System.out.println(" executeBillingAgreement  " + token);
+        Agreement a = new Agreement();
+//        Agreement newAgreement = a.create(apiContext);
+
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+        
+        Agreement executedAgreement = a.execute(apiContext, token);        
+        
+        System.out.println(" executedAgreement " + Agreement.getLastRequest());
+        System.out.println(" executedAgreement " + Agreement.getLastResponse());
+
+        return null;
+    }
+    
+    
+    @Override
+    public Agreement getBa(String id) throws Exception {
+        
+        APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+        Agreement a = new Agreement();
+        a.setId(id);
+        
+        Agreement res = a.get(apiContext, id);
+        
+        System.out.println("res ------------> " + res);
+        
+       return null; 
+    }
+
+    @Override
+    public String payWithSavedCard() {// ###CreditCard
+        // A resource representing a credit card that can be
+        // used to fund a payment.
+        CreditCardToken creditCardToken = new CreditCardToken();
+        creditCardToken.setCreditCardId("CARD-5BT058015C739554AKE2GCEI");
+
+        // ###Details
+        // Let's you specify details of a payment amount.
+        Details details = new Details();
+        details.setShipping("1");
+        details.setSubtotal("5");
+        details.setTax("1");
+
+        // ###Amount
+        // Let's you specify a payment amount.
+        Amount amount = new Amount();
+        amount.setCurrency("BRL");
+        // Total must be equal to the sum of shipping, tax and subtotal.
+        amount.setTotal("7");
+        amount.setDetails(details);
+
+        // ###Transaction
+        // A transaction defines the contract of a
+        // payment - what is the payment for and who
+        // is fulfilling it. Transaction is created with
+        // a `Payee` and `Amount` types
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+        transaction
+                .setDescription("This is the payment transaction description.");
+
+        // The Payment creation API requires a list of
+        // Transaction; add the created `Transaction`
+        // to a List
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        transactions.add(transaction);
+
+        // ###FundingInstrument
+        // A resource representing a Payeer's funding instrument.
+        // In this case, a Saved Credit Card can be passed to
+        // charge the payment.
+        FundingInstrument fundingInstrument = new FundingInstrument();
+        fundingInstrument.setCreditCardToken(creditCardToken);
+
+        // The Payment creation API requires a list of
+        // FundingInstrument; add the created `FundingInstrument`
+        // to a List
+        List<FundingInstrument> fundingInstrumentList = new ArrayList<FundingInstrument>();
+        fundingInstrumentList.add(fundingInstrument);
+
+        // ###Payer
+        // A resource representing a Payer that funds a payment
+        // Use the List of `FundingInstrument` and the Payment Method
+        // as 'credit_card'
+        Payer payer = new Payer();
+        payer.setFundingInstruments(fundingInstrumentList);
+        payer.setPaymentMethod("credit_card");
+
+        // ###Payment
+        // A Payment Resource; create one using
+        // the above types and intent as 'sale'
+        Payment payment = new Payment();
+        payment.setIntent("sale");
+        payment.setPayer(payer);
+        payment.setTransactions(transactions);
+
+        try {
+
+            // ### Api Context
+            // Pass in a `ApiContext` object to authenticate
+            // the call and to send a unique request id
+            // (that ensures idempotency). The SDK generates
+            // a request id if you do not pass one explicitly.
+            APIContext apiContext = new APIContext(APIConstants.clientId, APIConstants.secretId, APIConstants.mode);
+
+            // Create a payment by posting to the APIService
+            // using a valid AccessToken
+            // The return object contains the status;
+            Payment createdPayment = payment.create(apiContext);
+
+            System.out.println("Created payment with id = " + createdPayment.getId()
+                    + " and status = " + createdPayment.getState());
+
+//			LOGGER.info("Created payment with id = " + createdPayment.getId()
+//					+ " and status = " + createdPayment.getState());
+//			ResultPrinter.addResult(req, resp, "Payment with Saved Card", Payment.getLastRequest(), Payment.getLastResponse(), null);
+        } catch (PayPalRESTException e) {
+            System.out.println("REST" + e);
+//			ResultPrinter.addResult(req, resp, "Payment with Saved Card", Payment.getLastRequest(), null, e.getMessage());
+        }
+
+//		req.getRequestDispatcher("response.jsp").forward(req, resp);
+        return null;
+    }
+
+    public void createRecuringCCProfile() throws PayPalRESTException, Exception {
+            
+        
+//        ex.setSetExpressCheckoutRequest(null);
+        
+        
+            
+        
+//            RecurringPaymentsProfileDetailsType profileDetails = new RecurringPaymentsProfileDetailsType("2016-010-03T00:00:00:000Z");
+////
+//        BasicAmountType paymentAmount = new BasicAmountType(CurrencyCodeType.BRL, "5.0");
+//        BillingPeriodType period = BillingPeriodType.fromValue("Day");
+//        int frequency = 10;
+//        BillingPeriodDetailsType paymentPeriod = new BillingPeriodDetailsType(period, frequency, paymentAmount);
+//
+//        ScheduleDetailsType scheduleDetails = new ScheduleDetailsType();
+//        scheduleDetails.setDescription("recurring billing");
+//        scheduleDetails.setPaymentPeriod(paymentPeriod);
+////
+//        CreditCardDetailsType creditCard = new CreditCardDetailsType();
+//        creditCard.setCreditCardNumber("4002350589119162");
+//        creditCard.setCVV2("962");
+//        creditCard.setExpMonth(9);
+//        creditCard.setExpYear(2021);
+//        creditCard.setCreditCardType(CreditCardTypeType.fromValue("Visa"));
+//
+//        CreateRecurringPaymentsProfileRequestDetailsType createRPProfileRequestDetails = new CreateRecurringPaymentsProfileRequestDetailsType(profileDetails, scheduleDetails);
+//        createRPProfileRequestDetails.setCreditCard(creditCard);
+////
+//        CreateRecurringPaymentsProfileRequestType createRPProfileRequest = new CreateRecurringPaymentsProfileRequestType();
+//        createRPProfileRequest.setCreateRecurringPaymentsProfileRequestDetails(createRPProfileRequestDetails);
+//
+//        CreateRecurringPaymentsProfileReq createRPPProfileReq = new CreateRecurringPaymentsProfileReq();
+//        createRPPProfileReq.setCreateRecurringPaymentsProfileRequest(createRPProfileRequest);
+//
+//        Map<String, String> sdkConfig = new HashMap<String, String>();
+//        sdkConfig.put("mode", "sandbox");
+//        sdkConfig.put("acct1.UserName", "paypal-facilitator_api1.rsantosit.com.br");
+//        sdkConfig.put("acct1.Password", "62JH5E69QTWM2NW8");
+//        sdkConfig.put("acct1.Signature", "AFcWxV21C7fd0v3bYYYRCpSSRl31ARB8m0FMqPxdKM8lLJfoBE9Z7gWw");
+//        PayPalAPIInterfaceServiceService service = new PayPalAPIInterfaceServiceService(sdkConfig);
+//        CreateRecurringPaymentsProfileResponseType createRPProfileResponse = service.createRecurringPaymentsProfile(createRPPProfileReq);
+////        
+//        System.out.println(" createRPProfileResponse  " + createRPProfileResponse.getCorrelationID());        
+//        System.out.println(" createRPProfileResponse  " + createRPProfileResponse.getAck());        
+//        System.out.println(" createRPProfileResponse  " + createRPProfileResponse.getBuild());        
+//        //        System.out.println(" createRPProfileResponse  " + createRPProfileResponse);        
+        //GET ACCESS TOKEN 
+//        Map<String, String> sdkConfig = new HashMap<String, String>();
+//        sdkConfig.put("mode", "sandbox");
+//
+//        String accessToken = new OAuthTokenCredential(APIConstants.clientId, APIConstants.secretId, sdkConfig).getAccessToken();
+//        
+//        System.out.println("accessToken ------------->" +  accessToken);
+        PaymentExecution paymentExecution = new PaymentExecution();
+
+        try {
+
+//            PayRequest payRequest = new PayRequest();
+//
+//            List<Receiver> receivers = new ArrayList<Receiver>();
+//            Receiver receiver = new Receiver();
+//            receiver.setAmount(150D);
+//            receiver.setEmail("paypal-facilitator@rsantosit.com.br");
+//            receivers.add(receiver);
+//            ReceiverList receiverList = new ReceiverList(receivers);
+//            payRequest.setSenderEmail("paypal2-buyer@rsantosit.com.br");
+//
+//            SenderIdentifier identifier = new SenderIdentifier();
+//
+//            TaxIdDetails details = new TaxIdDetails();
+//            details.setTaxId("30949017787");
+//            details.setTaxIdType("BR_CPF");
+//            identifier.setTaxIdDetails(details);
+//
+//            payRequest.setSender(identifier);
+////            payRequest.setClientDetails(null);
+//
+//            payRequest.setSender(null);
+//            payRequest.setReceiverList(receiverList);
+//
+//            RequestEnvelope requestEnvelope = new RequestEnvelope("en_US");
+//            payRequest.setRequestEnvelope(requestEnvelope);
+//            payRequest.setActionType("PAY");
+//            payRequest.setCancelUrl("https://devtools-paypal.com/guide/ap_implicit_payment?cancel=true");
+//            payRequest.setReturnUrl("https://devtools-paypal.com/guide/ap_implicit_payment?success=true");
+//            payRequest.setCurrencyCode("BRL");
+//            payRequest.setIpnNotificationUrl("http://replaceIpnUrl.com");
+//
+//            Map<String, String> sdkConfigs = new HashMap<String, String>();
+//            sdkConfigs.put("mode", "sandbox");
+//            sdkConfigs.put("acct1.UserName", "paypal-facilitator_api1.rsantosit.com.br");
+//            sdkConfigs.put("acct1.Password", "62JH5E69QTWM2NW8");
+//            sdkConfigs.put("acct1.Signature", "AFcWxV21C7fd0v3bYYYRCpSSRl31ARB8m0FMqPxdKM8lLJfoBE9Z7gWw");
+//            sdkConfigs.put("acct1.AppId", "APP-80W284485P519543T");
+//
+//            AdaptivePaymentsService adaptivePaymentsService = new AdaptivePaymentsService(sdkConfigs);
+//            PayResponse payResponse = adaptivePaymentsService.pay(payRequest);
+//
+//            System.out.println(" + getPayKey ----------------->" + payResponse.getPayKey());
+//            System.out.println(" + getPaymentExecStatus ----------------->" + payResponse.getPaymentExecStatus());
+//            System.out.println(" + getDefaultFundingPlan ----------------->" + payResponse.getDefaultFundingPlan());
+//            System.out.println(" + getResponseEnvelope ----------------->" + payResponse.getResponseEnvelope());
+//
+//            RequestEnvelope requestEnvelopes = new RequestEnvelope("en_US");
+//            PaymentDetailsRequest paymentDetailsRequest = new PaymentDetailsRequest(requestEnvelopes);
+//            paymentDetailsRequest.setPayKey(payResponse.getPayKey());
+//
+////        Map<String, String> sdkConfig = new HashMap<String, String>();
+////        sdkConfig.put("mode", "sandbox");
+////        sdkConfig.put("acct1.UserName", "paypal-facilitator_api1.rsantosit.com.br");
+////        sdkConfig.put("acct1.Password", "62JH5E69QTWM2NW8");
+////        sdkConfig.put("acct1.Signature","AFcWxV21C7fd0v3bYYYRCpSSRl31ARB8m0FMqPxdKM8lLJfoBE9Z7gWw");
+////        sdkConfig.put("acct1.AppId","APP-80W284485P519543T");
+//            AdaptivePaymentsService adaptivePaymentsServices = new AdaptivePaymentsService(sdkConfig);
+//            PaymentDetailsResponse paymentDetailsResponse = adaptivePaymentsServices.paymentDetails(paymentDetailsRequest);
+//
+//            System.out.println(" + paymentDetailsResponse ----------------->" + paymentDetailsResponse.getStatus());
+
+//            ObjectMapper mapperObj = new ObjectMapper();
+////            createdPayment = createdPayment.execute(apiContext, paymentExecution);
+//            System.out.println("Executed The Payment" + Payment.getLastRequest());
+//            System.out.println("Executed The Payment" + Payment.getLastResponse());
+//            System.out.println("Executed The Payment");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    
+
+    public String one() throws Exception {
+        
+        //STEP 1 : 
+        
+        PaymentDetailsType paymentDetails = new PaymentDetailsType();
+        paymentDetails.setPaymentAction(PaymentActionCodeType.AUTHORIZATION);
+
+        BasicAmountType orderTotal = new BasicAmountType();
+        orderTotal.setCurrencyID(CurrencyCodeType.fromValue("BRL"));
+        orderTotal.setValue("150");
+        paymentDetails.setOrderTotal(orderTotal);
+        List<PaymentDetailsType> paymentDetailsList = new ArrayList<PaymentDetailsType>();
+        paymentDetailsList.add(paymentDetails);
+
+        SetExpressCheckoutRequestDetailsType setExpressCheckoutRequestDetails = new SetExpressCheckoutRequestDetailsType();
+        setExpressCheckoutRequestDetails.setReturnURL("https://devtools-paypal.com/guide/recurring_payment_ec?success=true");
+        setExpressCheckoutRequestDetails.setCancelURL("https://devtools-paypal.com/guide/recurring_payment_ec?cancel=true");
+
+        setExpressCheckoutRequestDetails.setPaymentDetails(paymentDetailsList);
+
+        BillingAgreementDetailsType billingAgreement = new BillingAgreementDetailsType(BillingCodeType.fromValue("RecurringPayments"));
+        billingAgreement.setBillingAgreementDescription("recurringbilling");
+        billingAgreement.setBillingType(BillingCodeType.MERCHANTINITIATEDBILLINGSINGLEAGREEMENT);
+        List<BillingAgreementDetailsType> billList = new ArrayList<BillingAgreementDetailsType>();
+        billList.add(billingAgreement);
+        setExpressCheckoutRequestDetails.setBillingAgreementDetails(billList);
+
+        SetExpressCheckoutRequestType setExpressCheckoutRequest = new SetExpressCheckoutRequestType(setExpressCheckoutRequestDetails);
+        setExpressCheckoutRequest.setVersion("104.0");
+
+        SetExpressCheckoutReq setExpressCheckoutReq = new SetExpressCheckoutReq();
+        setExpressCheckoutReq.setSetExpressCheckoutRequest(setExpressCheckoutRequest);
+
+        Map<String, String> sdkConfig = new HashMap<String, String>();
+        sdkConfig.put("mode","sandbox");
+        sdkConfig.put("acct1.UserName","paypal-facilitator_api1.rsantosit.com.br");
+        sdkConfig.put("acct1.Password","62JH5E69QTWM2NW8");
+        sdkConfig.put("acct1.Signature","AFcWxV21C7fd0v3bYYYRCpSSRl31ARB8m0FMqPxdKM8lLJfoBE9Z7gWw");
+        PayPalAPIInterfaceServiceService service = new PayPalAPIInterfaceServiceService(sdkConfig);
+        SetExpressCheckoutResponseType setExpressCheckoutResponse = service.setExpressCheckout(setExpressCheckoutReq);
+        System.out.println("getBuild  " + setExpressCheckoutResponse.getBuild());        
+        System.out.println("getCorrelationID  " + setExpressCheckoutResponse.getCorrelationID());        
+        System.out.println("getToken  " + setExpressCheckoutResponse.getToken());        
+        System.out.println("getAck  " + setExpressCheckoutResponse.getAck());        
+        System.out.println("getErrors  " + setExpressCheckoutResponse.getErrors());        
+        System.out.println("getErrors  " + setExpressCheckoutResponse);        
+//        System.out.println("setExpressCheckoutResponse  " + setExpressCheckoutResponse.getErrors().size());        
+//        System.out.println("setExpressCheckoutResponse  " + setExpressCheckoutResponse.getErrors().get(0).getLongMessage());        
+        
+        //STEP 2 : 
+        //Buyer need to approve
+        //"https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=" +  setExpressCheckoutResponse.getToken()
+
+        
+        return  setExpressCheckoutResponse.getToken();
+        
+//        return null;
+        
+    }
+    
+    @Override
+    public void two() throws Exception {
+        
+        
+        //STEP 3 : 
+        
+            CreateBillingAgreementReq agreement = new CreateBillingAgreementReq();
+//        
+            CreateBillingAgreementRequestType agreementRequestType = new CreateBillingAgreementRequestType();
+            
+            agreementRequestType.setToken("EC-33W60358947215031");
+            agreementRequestType.setVersion("106");
+            agreement.setCreateBillingAgreementRequest(agreementRequestType);
+
+            Map<String, String> sdkConfig = new HashMap<String, String>();
+            sdkConfig.put("mode","sandbox");
+            sdkConfig.put("acct1.UserName","paypal-facilitator_api1.rsantosit.com.br");
+            sdkConfig.put("acct1.Password","62JH5E69QTWM2NW8");
+            sdkConfig.put("acct1.Signature","AFcWxV21C7fd0v3bYYYRCpSSRl31ARB8m0FMqPxdKM8lLJfoBE9Z7gWw");
+
+            PayPalAPIInterfaceServiceService service1 = new PayPalAPIInterfaceServiceService(sdkConfig);
+    //        
+        CreateBillingAgreementResponseType res = service1.createBillingAgreement(agreement);
+            System.out.println("res ---------------> " + res.getBillingAgreementID());
+//            System.out.println("res ---------------> " + res);
+            
+        
+        
+        
+        
+             //STEP 4 : 
+//            
+            DoReferenceTransactionReq doReferenceTransactionReq = new DoReferenceTransactionReq();
+            
+            DoReferenceTransactionRequestType doReferenceTransactionRequestType = new DoReferenceTransactionRequestType();
+            
+            
+            DoReferenceTransactionRequestDetailsType detailsType = new DoReferenceTransactionRequestDetailsType();
+            
+            
+            detailsType.setPaymentAction(PaymentActionCodeType.SALE);
+            
+            
+            PaymentDetailsType paymentDetails = new PaymentDetailsType();
+//                paymentDetails.setPaymentAction(PaymentActionCodeType.AUTHORIZATION);
+
+            BasicAmountType orderTotal = new BasicAmountType();
+            orderTotal.setCurrencyID(CurrencyCodeType.BRL);
+            orderTotal.setValue("160"); 
+            paymentDetails.setOrderTotal(orderTotal);
+//                List<PaymentDetailsType> paymentDetailsList = new ArrayList<PaymentDetailsType>();
+//                paymentDetailsList.add(paymentDetails);
+            
+            
+            detailsType.setPaymentDetails(paymentDetails);
+            
+            //Billing id
+            detailsType.setReferenceID("B-1ED47630AV7006645");
+            
+            
+            doReferenceTransactionRequestType.setDoReferenceTransactionRequestDetails(detailsType);
+            
+            
+            doReferenceTransactionReq.setDoReferenceTransactionRequest(doReferenceTransactionRequestType);
+            
+            
+            DoReferenceTransactionResponseType doReferenceTransactionResponseType = service1.doReferenceTransaction(doReferenceTransactionReq);
+//            
+//            System.out.println("doReferenceTransactionResponseType" + doReferenceTransactionResponseType.getAck());
+//            System.out.println("doReferenceTransactionResponseType" + doReferenceTransactionResponseType.getFMFDetails());
+//            
+            
     }
 
 }

@@ -132,14 +132,14 @@ public class WelcomeController {
 
 
     @RequestMapping(value = "/success", method = RequestMethod.GET)
-    public String succes(@RequestParam("paymentId") String paymentId, @RequestParam("token") String token, Map<String, Object> model) {
+    public String succes(@RequestParam("token") String token, Map<String, Object> model) {
 
-        logger.debug("success is executed!");
+        logger.debug("success is executed!" );
 
-        System.out.println(paymentId);
+//        System.out.println(paymentId);
         System.out.println(token);
         try {
-            paymentService.getPayment(paymentId, token);
+//            paymentService.getPayment(paymentId, token);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -239,7 +239,10 @@ public class WelcomeController {
 
         try {
             
-            model.put("allProfiles",paymentService.getPlan(planId));                        
+//            model.put("allProfiles",paymentService.getPlan(planId));                        
+            
+            paymentService.getPlan(planId);
+            
             
         } catch (Exception ex) {
 
@@ -250,4 +253,114 @@ public class WelcomeController {
 
         return "success";
     }
+    
+    
+    @RequestMapping(value = "/executeCard", method = RequestMethod.GET)
+    public String executeCard(Map<String, Object> model) {
+
+        try {
+            
+            model.put("allProfiles",paymentService.payWithSavedCard());                        
+            
+//            paymentService.createBillingAgreement();
+            
+            
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
+    
+     @RequestMapping(value = "/recurProfile", method = RequestMethod.GET)
+    public String recurCard(Map<String, Object> model) throws Exception {
+
+        try {            
+             paymentService.createRecuringCCProfile();                                                
+             
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
+    
+    
+    
+     @RequestMapping(value = "/one", method = RequestMethod.GET)
+    public String one(Map<String, Object> model) throws Exception {
+
+        try {            
+             paymentService.one();                                                 
+             
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
+    
+    
+    
+    @RequestMapping(value = "/cba", method = RequestMethod.GET)
+    public String createBillingAgreement(Map<String, Object> model) throws Exception {
+        
+        try {                        
+             paymentService.createBillingAgreement();
+             
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
+    
+    @RequestMapping(value = "/approve", method = RequestMethod.GET)
+    public String approve(@RequestParam("token") String token, Map<String, Object> model) throws Exception {
+
+        try {            
+            
+             System.out.println("token" + token );
+             
+             paymentService.executeBillingAgreement(token);
+             
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
+    
+    
+    @RequestMapping(value = "/getcba", method = RequestMethod.GET)
+    public String getBa(Map<String, Object> model, @RequestParam("id") String id) throws Exception {
+        
+        try {                        
+             paymentService.getBa(id);
+             
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return "error";
+        }
+
+        return "success";
+    }
+    
 }

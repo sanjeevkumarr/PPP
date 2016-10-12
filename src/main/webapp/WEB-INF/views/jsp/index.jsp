@@ -146,7 +146,7 @@
         },
                 
         "onContinue" : function myFunction1(resp) {    
-            
+            console.log(resp)
         },
         
         });
